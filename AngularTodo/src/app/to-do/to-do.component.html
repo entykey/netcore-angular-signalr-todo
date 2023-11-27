@@ -1,0 +1,29 @@
+<p>to-do works!</p>
+<!-- src/app/to-do/to-do.component.html -->
+<div>
+    <h2>To-Do List</h2>
+  
+    <!-- Add form to add new ToDo items -->
+    <form [formGroup]="addTodoForm" (ngSubmit)="addToDoItem()">
+      <!-- <input [(ngModel)]="newItem.text" placeholder="New ToDo item" required /> -->
+      <input type="text" class="input-field" formControlName="text" [class.error]="addTodoForm.get('text')?.dirty && addTodoForm.get('text')?.hasError('required')" />
+
+      <div class="form-check">
+        <input class="form-check-input custom-control-input" type="checkbox" id="isCompleted" name="isCompleted" formControlName="isCompleted" value="false">
+        <label class="form-check-label custom-control-label" for="rememberMe">Is Completed</label>
+      </div>
+
+      <button type="submit">Add</button>
+    </form>
+  
+    <!-- Display ToDo items -->
+    <ul>
+      <li *ngFor="let item of toDoList">
+        <input type="checkbox" [(ngModel)]="item.isCompleted" />
+        {{item.id}} - {{ item.text }}
+        <!-- <button (click)="updateToDoItem(item.id, { text: 'Updated Item', isCompleted: !item.isCompleted })">Update</button> -->
+        <button (click)="deleteToDoItem(item.id)">Delete</button>
+      </li>
+    </ul>
+  </div>
+  
