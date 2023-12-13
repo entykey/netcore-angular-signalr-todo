@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
+import { HttpClient } from '@angular/common/http';  // to hit controller endpoints instead of hub connection
 import { BehaviorSubject, Observable } from 'rxjs';
+import { Howl } from 'howler';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +13,17 @@ export class ToDoService {
     ToDoItem[]
   >([]);
 
-  constructor() {
+  private sound: Howl;
+
+  private apiUrl = 'http://localhost:5001/api/ToDo'; // Adjust the API URL as needed
+
+  constructor(private http: HttpClient) {
+    // Initialize the Howl sound
+    this.sound = new Howl({
+      src: ['assets/booking-request-received.mp3'], // Replace with your audio file path
+      volume: 0.9,
+    });
+
     this.hubConnection = new signalR.HubConnectionBuilder()
       // if try to fetch https => ERR SSL
       .withUrl('http://localhost:5001/todoHub') // Adjust the URL as needed
@@ -21,8 +33,15 @@ export class ToDoService {
 
     // Subscribe to the 'ReceiveUpdate' event and update the BehaviorSubject
     this.hubConnection.on('ReceiveUpdate', (data) => {
+      this.playSound();
+      console.log("ReceiveUpdate data: ", data);
       this.toDoListSubject.next(data);
     });
+  }
+
+  playSound() {
+    // Play the sound
+    this.sound.play();
   }
 
   startConnection = () => {
@@ -30,7 +49,7 @@ export class ToDoService {
       .start()
       .then(() => {
         console.log('Connection started');
-        this.getToDoList(); // Fetch initial data after connection is established
+        //this.getToDoList(); // Fetch initial data after connection is established
       })
       .catch((err) => console.log('Error while starting connection: ' + err));
   };
@@ -39,26 +58,55 @@ export class ToDoService {
     return this.toDoListSubject.asObservable();
   }
 
-  getToDoList = (): void => {
-    this.hubConnection.invoke('GetToDoItems').then((data) => {
-      console.log('Received ToDo items:', data); // Log the received items
-      this.toDoListSubject.next(data);
-    });
-  };
+  // getToDoList = (): void => {
+  //   this.hubConnection.invoke('GetToDoItems').then((data) => {
+  //     console.log('Received ToDo items:', data); // Log the received items
+  //     this.toDoListSubject.next(data);
+  //   });
+  // };
   
 
-  addToDoItem = (item: ToDoItem): void => {
+  // addToDoItem = (item: ToDoItem): void => {
+  //   console.log('Todo to add: ', item);
+  //   this.hubConnection.invoke('AddToDoItem', item);
+  // };
+
+  // updateToDoItem = (id: string, item: ToDoItem): void => {
+  //   this.hubConnection.invoke('UpdateToDoItem', id, item);
+  // };
+
+  // deleteToDoItem = (id: string): void => {
+  //   this.hubConnection.invoke('DeleteToDoItem', id);
+  // };
+
+  getToDoList(): void {
+    this.http.get<ToDoItem[]>(this.apiUrl).subscribe((data) => {
+      console.log('Received ToDo items:', data);
+      this.toDoListSubject.next(data);
+    });
+  }
+
+  addToDoItem(item: ToDoItem): void {
     console.log('Todo to add: ', item);
-    this.hubConnection.invoke('AddToDoItem', item);
-  };
+    this.http.post(this.apiUrl, item).subscribe(() => {
+      this.playSound();
+      this.getToDoList(); // Refresh the ToDo list after adding an item
+    });
+  }
 
-  updateToDoItem = (id: string, item: ToDoItem): void => {
-    this.hubConnection.invoke('UpdateToDoItem', id, item);
-  };
+  updateToDoItem(id: string, item: ToDoItem): void {
+    const updateUrl = `${this.apiUrl}/${id}`;
+    this.http.put(updateUrl, item).subscribe(() => {
+      this.getToDoList(); // Refresh the ToDo list after updating an item
+    });
+  }
 
-  deleteToDoItem = (id: string): void => {
-    this.hubConnection.invoke('DeleteToDoItem', id);
-  };
+  deleteToDoItem(id: string): void {
+    const deleteUrl = `${this.apiUrl}/${id}`;
+    this.http.delete(deleteUrl).subscribe(() => {
+      this.getToDoList(); // Refresh the ToDo list after deleting an item
+    });
+  }
 }
 
 export interface ToDoItem {

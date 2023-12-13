@@ -29,6 +29,7 @@
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ToDoItem item)
         {
+            item.Id = Guid.NewGuid().ToString();
             _context.ToDoItems.Add(item);
             await _context.SaveChangesAsync();
 
@@ -37,10 +38,10 @@
             return Ok(item);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] ToDoItem item)
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody] ToDoItem item)
         {
-            var existingItem = await _context.ToDoItems.FindAsync(id);
+            var existingItem = await _context.ToDoItems.FindAsync(item.Id);
 
             if (existingItem == null)
             {
@@ -52,13 +53,13 @@
 
             await _context.SaveChangesAsync();
 
-            await _hubContext.Clients.All.SendAsync("UpdateToDoList");
+            await _hubContext.Clients.All.SendAsync("ReceiveUpdate", _context.ToDoItems.ToList());
 
             return Ok(existingItem);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
             var item = await _context.ToDoItems.FindAsync(id);
 
@@ -70,7 +71,7 @@
             _context.ToDoItems.Remove(item);
             await _context.SaveChangesAsync();
 
-            await _hubContext.Clients.All.SendAsync("UpdateToDoList");
+            await _hubContext.Clients.All.SendAsync("ReceiveUpdate", _context.ToDoItems.ToList());
 
             return Ok(item);
         }
