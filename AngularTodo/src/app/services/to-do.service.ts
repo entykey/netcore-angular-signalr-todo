@@ -7,13 +7,14 @@ import { Howl } from 'howler';  // npm i --save-dev @types/howler
 @Injectable({
   providedIn: 'root',
 })
+
 export class ToDoService {
   private hubConnection: signalR.HubConnection;
   private toDoListSubject: BehaviorSubject<ToDoItem[]> = new BehaviorSubject<
     ToDoItem[]
   >([]);
 
-  private sound: Howl;
+  private sound: Howl;  // Sound player
 
   private apiUrl = 'http://localhost:5001/api/ToDo'; // Adjust the API URL as needed
 
