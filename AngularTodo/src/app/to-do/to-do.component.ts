@@ -26,6 +26,9 @@ export class ToDoComponent implements OnInit {
 
     // Subscribe to the BehaviorSubject directly in ngOnInit
     this.toDoService.getToDoListObservable().subscribe((data) => (this.toDoList = data));
+
+    // Fetch Todo list (normal API Http method)
+    this.getToDoList();
   }
 
    

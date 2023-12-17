@@ -49,11 +49,11 @@ export class ToDoService {
     this.hubConnection
       .start()
       .then(() => {
-        console.log('Connection started');
-        //this.getToDoList(); // Fetch initial data after connection is established
+        console.log('Connection started');        
       })
       .catch((err) => console.log('Error while starting connection: ' + err));
   };
+
 
   getToDoListObservable(): Observable<ToDoItem[]> {
     return this.toDoListSubject.asObservable();

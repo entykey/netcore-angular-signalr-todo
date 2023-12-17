@@ -21,7 +21,7 @@
         }
 
         [HttpGet]
-        public IEnumerable<ToDoItem> Get()
+        public async Task<IEnumerable<ToDoItem>> Get()
         {
             return _context.ToDoItems.ToList();
         }
