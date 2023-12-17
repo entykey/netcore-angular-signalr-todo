@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { HttpClient } from '@angular/common/http';  // to hit controller endpoints instead of hub connection
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Howl } from 'howler';  // npm i --save-dev @types/howler
+import { Howl } from 'howler';  // 1) $ npm i howler 
+//                                 2) $ npm i --save-dev @types/howler
 
 @Injectable({
   providedIn: 'root',
